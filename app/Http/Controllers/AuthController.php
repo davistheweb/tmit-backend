@@ -13,41 +13,46 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
+{public function register(Request $request) {
+    $request->validate([
+        'reg_number' => 'required|unique:student_applications',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:student_applications',
+        'password' => 'required|min:6',
+        'department' => 'required|string|max:100',
+    ]);
+
+    $student = StudentApplication::create([
+        'reg_number' => $request->reg_number,
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'department' => $request->department,
+    ]);
+
+    // Send email (pending approval)
+    Mail::raw("Your registration is pending admin approval.", function ($msg) use ($student) {
+        $msg->to($student->email)->subject('Registration Received');
+    });
+
+    return response()->json([
+        'message' => 'Registration successful. Await admin approval.',
+    ], 201);
+}
+
+
+public function login(Request $request)
 {
-    public function register(Request $request) {
-        $request->validate([
-            'reg_number' => 'required|unique:students',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students',
-            'password' => 'required|min:6',
-        ]);
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required'
+    ]);
 
-        $student = StudentApplication::create([
-    'reg_number' => $request->reg_number,
-    'name' => $request->name,
-    'email' => $request->email,
-    'password' => Hash::make($request->password),
-]);
+    // Check in the approved students table first
+    $student = Student::where('email', $request->email)->first();
 
-        // Send email (pending approval)
-        Mail::raw("Your registration is pending admin approval.", function ($msg) use ($student) {
-            $msg->to($student->email)->subject('Registration Received');
-        });
-
-        return response()->json([
-            'message' => 'Registration successful. Await admin approval.',
-        ], 201);
-    }
-
-    public function login(Request $request) {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
-        $student = Student::where('email', $request->email)->first();
-        
-        if (!$student || !Hash::check($request->password, $student->password)) {
+    if ($student) {
+        if (!Hash::check($request->password, $student->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The credentials are incorrect.']
             ]);
@@ -60,12 +65,29 @@ class AuthController extends Controller
         }
 
         $token = $student->createToken('student-token')->plainTextToken;
-
+          $isProfileComplete = $student->profile()->exists();
         return response()->json([
             'token' => $token,
-            'student' => $student
+            'student' => $student,
+            'profile_complete' => $isProfileComplete
         ]);
     }
+
+    // If not in Student table, check pending applications
+    $pending = StudentApplication::where('email', $request->email)->first();
+
+    if ($pending && Hash::check($request->password, $pending->password)) {
+        return response()->json([
+            'message' => 'Your application is still under review. Please wait for admin approval.'
+        ], 403);
+    }
+
+    // If not found anywhere
+    throw ValidationException::withMessages([
+        'email' => ['The credentials are incorrect.']
+    ]);
+}
+
 
     public function me(Request $request) {
         $user = Auth::user();

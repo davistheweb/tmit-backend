@@ -11,6 +11,7 @@ class StudentApplication extends Model
         'name',
         'email',
         'password', // if stored here (hashed)
+        'department',
         // add other fields you expect to create via mass-assignment
     ];
 }

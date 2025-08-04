@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\StudentApplication;
 use Illuminate\Http\Request;
+use App\Models\Department;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ApplicationRejectedMail;
 
@@ -38,11 +39,14 @@ class AdminStudentController extends Controller
     {
         $application = StudentApplication::findOrFail($id);
 
+$department = Department::where('code', $application->department)->first(); // 'CSC' or similar
+
         $student = Student::create([
             'reg_number' => $application->reg_number,
             'name'       => $application->name,
             'email'      => $application->email,
-            'password'   => $application->password, // Already hashed
+            'password'   => $application->password,// Already hashed
+               'department_id' => $department ? $department->id : null,
             'status'     => 'active',
         ]);
 
@@ -74,6 +78,29 @@ class AdminStudentController extends Controller
             'message' => 'Application rejected and applicant notified.',
         ]);
     }
+
+   public function pendingByDepartment(Request $request)
+    {
+        $request->validate([
+            'department' => 'required|string'
+        ]);
+
+        $applications = StudentApplication::where('department', 'LIKE', '%' . $request->department . '%')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        if ($applications->isEmpty()) {
+            return response()->json([
+                'message' => 'No pending applications found for this department.'
+            ], 404);
+        }
+
+        return response()->json([
+            'pending_applications' => $applications
+        ]);
+    }
+
+
 
     // DELETE /admin/students/{id}
     public function destroy($id)

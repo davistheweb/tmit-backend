@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 class Student extends Authenticatable {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['reg_number', 'name', 'email', 'password', 'status'];
+    protected $fillable = ['reg_number', 'name', 'email', 'password', 'status', 'department_id'];
 
     public function profile() {
         return $this->hasOne(StudentProfile::class);
@@ -19,6 +19,12 @@ class Student extends Authenticatable {
     public function results() {
         return $this->hasMany(Result::class);
     }
+
+    public function department()
+{
+    return $this->belongsTo(Department::class);
+}
+
 
     protected $hidden = [
         'password', 'remember_token',
