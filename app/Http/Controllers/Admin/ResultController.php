@@ -10,45 +10,39 @@ use App\Models\Course;
 
 class ResultController extends Controller
 {
-   public function storeResult(Request $request)
-{
-    $request->validate([
-        'reg_number' => 'required|exists:students,reg_number',
-        'session' => 'required|string',
-        'semester' => 'required|string',
-        'results' => 'required|array',
-        'results.*.course_code' => 'required|exists:courses,code',
-        'results.*.score' => 'required|integer|min:0|max:100',
-    ]);
+    public function storeResult(Request $request)
+    {
+        $request->validate([
+            'reg_number' => 'required|exists:students,reg_number',
+            'session' => 'required|string',
+            'semester' => 'required|string',
+            'results' => 'required|array',
+            'results.*.course_code' => 'required|exists:courses,code',
+            'results.*.score' => 'required|integer|min:0|max:100',
+        ]);
 
-    $student = Student::where('reg_number', $request->reg_number)->first();
+        $student = Student::where('reg_number', $request->reg_number)->first();
 
-    foreach ($request->results as $input) {
-        $course = Course::where('code', $input['course_code'])->first();
+        foreach ($request->results as $input) {
+            $course = Course::where('code', $input['course_code'])->first();
 
-        Result::updateOrCreate(
-            [
-                'student_id'   => $student->id,
-                'course_code'  => $course->code,
-                'session'      => $request->session,
-                'semester'     => $request->semester,
-                // 'score'        => $input['score'],
-                // 'grade'        => $this->getGrade($input['score']),
-            ],
-            [
-                'course_title' => $course->title,
-                'score'        => $input['score'],
-                
-                'semester'     => $request->semester,
-                'session'      => $request->session,   
-                'grade'        => $this->getGrade($input['score']),
-            ]       
-        );
+            Result::updateOrCreate(
+                [
+                    'student_id'   => $student->id,
+                    'course_code'  => $course->code,
+                    'session'      => $request->session,
+                    'semester'     => $request->semester,
+                ],
+                [
+                    'course_title' => $course->title, // save course title directly
+                    'score'        => $input['score'],
+                    'grade'        => $this->getGrade($input['score']),
+                ]
+            );
+        }
+
+        return response()->json(['message' => 'Results stored successfully.']);
     }
-
-    return response()->json(['message' => 'Results stored successfully.']);
-}
-
 
     public function viewStudentResult($reg_number, Request $request)
     {
@@ -57,18 +51,18 @@ class ResultController extends Controller
             'semester' => 'required|string',
         ]);
 
-        $student = Student::where('reg_number', $reg_number)->with('department')->firstOrFail();
+        $student = Student::where('reg_number', $reg_number)
+            ->with('department')
+            ->firstOrFail();
 
-        $results = Result::with('course')
-            ->where('student_id', $student->id)
+        $results = Result::where('student_id', $student->id)
             ->where('session', $request->session)
             ->where('semester', $request->semester)
             ->get()
             ->map(function ($result) {
                 return [
-                    'course_code' => $result->course->code,
-                    'course_title' => $result->course->title,
-                    'credit_unit' => $result->course->credit_unit,
+                    'course_code' => $result->course_code,
+                    'course_title' => $result->course_title, // use stored title instead of relation
                     'score' => $result->score,
                     'grade' => $result->grade,
                 ];

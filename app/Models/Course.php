@@ -13,10 +13,11 @@ class Course extends Model
         'code', 'title', 'unit', 'level', 'semester', 'department_id', 'session'
     ];
 
-    public function department()
-    {
-        return $this->belongsTo(Department::class);
-    }
+   public function departments()
+{
+    return $this->belongsToMany(Department::class, 'course_department', 'course_id', 'department_id');
+}
+
 
     public function results()
     {

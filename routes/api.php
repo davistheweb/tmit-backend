@@ -53,14 +53,18 @@ Route::prefix('admin')->group(function () {
         Route::post('/faculties', [FacultyDepartmentController::class, 'createFaculty']);
         Route::post('/departments', [FacultyDepartmentController::class, 'createDepartment']);
         Route::post('/results/store', [ResultController::class, 'storeResult']);
-        Route::get('/results/{reg_number}', [ResultController::class, 'viewStudentResult']);
-           Route::get('courses/', [CourseController::class, 'index']);
-    Route::get('courses/{id}', [CourseController::class, 'show']);
-    Route::post('courses/', [CourseController::class, 'store']);
-    Route::put('courses/{id}', [CourseController::class, 'update']);
-    Route::delete('courses/{id}', [CourseController::class, 'destroy']);
-      Route::get('staff/all', [StaffAuthController::class, 'listAll']);   
+        Route::get('results/{reg_number}', [ResultController::class, 'viewStudentResult'])
+    ->where('reg_number', '.*');
+
+        Route::get('courses/', [CourseController::class, 'index']);
+        Route::get('courses/{id}', [CourseController::class, 'show']);
+        Route::post('courses/', [CourseController::class, 'store']);
+        Route::put('courses/{id}', [CourseController::class, 'update']);
+        Route::delete('courses/{id}', [CourseController::class, 'destroy']);
+        Route::get('staff/all', [StaffAuthController::class, 'listAll']);
         Route::get('staff/{id}', [StaffAuthController::class, 'view']);
+        Route::get('/departments/{id}/courses', [CourseController::class, 'getCoursesByDepartment']);
+        Route::get('/courses/{id}/departments', [CourseController::class, 'getDepartmentsByCourse']);
         // Route::post('/results', [ResultController::class, 'store']);
         // Route::post('/admin/results/input', [ResultController::class, 'storeResult']);
         // Route::get('/admin/results/student', [ResultController::class, 'getResultsByRegNumber']);
