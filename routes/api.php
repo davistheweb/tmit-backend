@@ -109,26 +109,26 @@ Route::prefix('staff')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
          Route::middleware([StaffPermissionMiddleware::class])->group(function () {
-            Route::get('/students', [AdminStudentController::class, 'index'])->name('admin_students_index');
-            Route::get('/students/pending', [AdminStudentController::class, 'pending'])->name('admin_students_pending');
-            Route::post('/students/{id}/approve', [AdminStudentController::class, 'approve'])->name('admin_students_approve');
-            Route::post('/students/{id}/reject', [AdminStudentController::class, 'reject'])->name('admin_students_reject');
-            Route::post('/students/pending-by-department', [AdminStudentController::class, 'pendingByDepartment'])->name('admin_students_pending_by_department');
-            Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin_students_destroy');
-            Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin_dashboard');
-            Route::get('/students/by-department', [AdminDashboardController::class, 'studentsByDepartmentQuery'])->name('admin_students_by_department');
-            Route::post('/faculties', [FacultyDepartmentController::class, 'createFaculty'])->name('admin_faculty_create');
-            Route::post('/departments', [FacultyDepartmentController::class, 'createDepartment'])->name('admin_department_create');
-              Route::get('courses/', [CourseController::class, 'index'])->name('courses_index');
-        Route::get('courses/{id}', [CourseController::class, 'show'])->name('courses_show');
-        Route::post('courses/', [CourseController::class, 'store'])->name('courses_store');
-        Route::put('courses/{id}', [CourseController::class, 'update'])->name('courses_update');
-        Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('courses_destroy');
-        Route::get('/departments/{id}/courses', [CourseController::class, 'getCoursesByDepartment'])->name('courses_by_department');
-        Route::get('/courses/{id}/departments', [CourseController::class, 'getDepartmentsByCourse'])->name('courses_departments');
+            Route::get('/students', [AdminStudentController::class, 'index'])->name('staff_students_index');
+            Route::get('/students/pending', [AdminStudentController::class, 'pending'])->name('staff_students_pending');
+            Route::post('/students/{id}/approve', [AdminStudentController::class, 'approve'])->name('staff_students_approve');
+            Route::post('/students/{id}/reject', [AdminStudentController::class, 'reject'])->name('staff_students_reject');
+            Route::post('/students/pending-by-department', [AdminStudentController::class, 'pendingByDepartment'])->name('staff_students_pending_by_department');
+            Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('staff_students_destroy');
+            Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('staff_dashboard');
+            Route::get('/students/by-department', [AdminDashboardController::class, 'studentsByDepartmentQuery'])->name('staff_students_by_department');
+            Route::post('/faculties', [FacultyDepartmentController::class, 'createFaculty'])->name('staff_faculty_create');
+            Route::post('/departments', [FacultyDepartmentController::class, 'createDepartment'])->name('staff_department_create');
+              Route::get('courses/', [CourseController::class, 'index'])->name('staff_list_courses_index');
+        Route::get('courses/{id}', [CourseController::class, 'show'])->name('staff_list_courses_show');
+        Route::post('courses/', [CourseController::class, 'store'])->name('staff_list_courses_store');
+        Route::put('courses/{id}', [CourseController::class, 'update'])->name('staff_list_courses_update');
+        Route::delete('courses/{id}', [CourseController::class, 'destroy'])->name('staff_list_courses_destroy');
+        Route::get('/departments/{id}/courses', [CourseController::class, 'getCoursesByDepartment'])->name('staff_list_courses_by_department');
+        Route::get('/courses/{id}/departments', [CourseController::class, 'getDepartmentsByCourse'])->name('staff_list_courses_departments');
          Route::middleware([StaffPermissionMiddleware::class])->group(function () {
-            Route::post('/results/store', [ResultController::class, 'storeResult'])->name('results_store');
-            Route::get('/results/{reg_number}', [ResultController::class, 'viewStudentResult'])->where('reg_number', '.*')->name('results_view');
+            Route::post('/results/store', [ResultController::class, 'storeResult'])->name('staff_store_results_store');
+            Route::get('/results/{reg_number}', [ResultController::class, 'viewStudentResult'])->where('reg_number', '.*')->name('staff_list_results_view');
         });
 
         });
