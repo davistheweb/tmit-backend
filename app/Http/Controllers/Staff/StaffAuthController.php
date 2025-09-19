@@ -50,7 +50,7 @@ class StaffAuthController extends Controller
         $token = $staff->createToken('staff_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Staff registered successfully',
+            'message' => 'Registration Successful',
             'token' => $token,
             'staff' => $staff,
         ]);
@@ -71,12 +71,36 @@ class StaffAuthController extends Controller
 
         $token = $staff->createToken('staff_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful',
-            'token' => $token,
-            'staff' => $staff,
-        ]);
+   return response()->json([
+    'message' => 'Login successful',
+    'token'   => $token,
+    // 'staff'   => $staff,
+    // 'roles'   => $staff->roles->pluck('name'),        // multiple roles
+    // 'permissions' => $staff->permissions->pluck('name') // multiple permissions
+]);
+
     }
+
+    public function me(Request $request)
+{
+    $staff = $request->user(); // Current authenticated staff
+
+    return response()->json([
+        'id'          => $staff->id,
+        // 'name'        => $staff->name,
+        // 'email'       => $staff->email,
+        // 'phone'       => $staff->phone,
+        // 'address'     => $staff->address,
+        // 'dob'         => $staff->dob,
+        // 'gender'      => $staff->gender,
+        // 'certification'=> $staff->certification,
+        // 'lga'         => $staff->lga,
+        // 'passport'    => $staff->passport,
+        'roles'       => $staff->roles->pluck('name'),
+        'permissions' => $staff->allPermissions()->pluck('name'),
+    ]);
+}
+
 
     public function logout(Request $request)
     {
@@ -84,15 +108,39 @@ class StaffAuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
-    public function listAll()
-    {
-        return response()->json(Staff::all());
+public function listAll()
+{
+    $staff = Staff::with(['roles:id,name', 'permissions:id,name'])->get();
+
+    return response()->json([
+        'data' => $staff->map(function ($s) {
+            return [
+                'id'          => $s->id,
+                'name'        => $s->name,
+                'email'       => $s->email,
+                'roles'       => $s->roles->pluck('name'),
+                'permissions' => $s->allPermissions()->pluck('name'),
+            ];
+        }),
+    ]);
+}
+
+public function view($id)
+{
+    $staff = Staff::with(['roles:id,name', 'permissions:id,name'])->find($id);
+
+    if (!$staff) {
+        return response()->json(['message' => 'Staff not found'], 404);
     }
 
-    public function view($id)
-    {
-        $staff = Staff::find($id);
-        if (!$staff) return response()->json(['message' => 'Staff not found'], 404);
-        return response()->json($staff);
-    }
+    return response()->json([
+        'id'          => $staff->id,
+        'name'        => $staff->name,
+        'email'       => $staff->email,
+        'roles'       => $staff->roles->pluck('name'),
+        'permissions' => $staff->allPermissions()->pluck('name'),
+    ]);
+}
+
+
 }

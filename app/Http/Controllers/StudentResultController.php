@@ -9,7 +9,7 @@ use App\Models\Course;
 
 class StudentResultController extends Controller
 {
-   public function viewResults(Request $request)
+  public function viewResults(Request $request)
 {
     $request->validate([
         'reg_number' => 'required|exists:students,reg_number',
@@ -35,6 +35,18 @@ class StudentResultController extends Controller
 
     $formattedResults = $results->map(function ($result) use (&$totalCredits, &$totalWeightedPoints, $gradePoints) {
         $course = $result->course;
+
+        if (!$course) {
+            // If no matching course, avoid crash and set credit_unit to 0
+            return [
+                'course_code' => $result->course_code,
+                'course_title' => $result->course_title,
+                'credit_unit' => 0,
+                'score' => $result->score,
+                'grade' => $result->grade,
+            ];
+        }
+
         $creditUnit = $course->credit_unit;
         $gradePoint = $gradePoints[$result->grade] ?? 0;
 
@@ -63,6 +75,7 @@ class StudentResultController extends Controller
         'results' => $formattedResults,
     ]);
 }
+
 
 public function viewCgpa(Request $request)
 {
